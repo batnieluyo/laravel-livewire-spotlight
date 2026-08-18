@@ -1,7 +1,34 @@
-@import 'tailwindcss';
+/*
+ * Spotlight's Tailwind output is scoped under [data-component="spotlight"]
+ * so it never leaks onto the rest of the page (e.g. resetting FluxUI's own
+ * button/input styling) once this stylesheet is injected globally via
+ * @assets/@endassets.
+ *
+ * theme.css stays unscoped: it only declares CSS custom properties on
+ * :root/:host, which has no visual effect on its own. Nesting it under
+ * [data-component="spotlight"] would turn that into an impossible
+ * "[data-component=spotlight] :root" selector (:root can't be a descendant
+ * of anything), silently breaking every variable Spotlight's utilities rely
+ * on.
+ *
+ * @scope (rather than plain selector nesting) is used for preflight/utilities
+ * because it matches the scoping root element itself as well as its
+ * descendants. Plain nesting only produces a descendant combinator, which
+ * would never match layout utilities (fixed, inset-0, pt-16, ...) applied
+ * directly on the [data-component="spotlight"] element.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+
+@layer base, utilities;
+
+@scope ([data-component="spotlight"]) {
+    @import 'tailwindcss/preflight.css' layer(base);
+    @import 'tailwindcss/utilities.css' layer(utilities);
+}
 
 @source '../resources/views/*.blade.php';
 
-[x-cloak] {
+[data-component="spotlight"][x-cloak],
+[data-component="spotlight"] [x-cloak] {
     display: none !important;
 }
